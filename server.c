@@ -37,24 +37,24 @@ int main() {
 	listen(server_sock, 5);
 	printf("Listening...\n");
 
-	while(1) { 
+	while(1){ 
 		addr_size = sizeof(client_addr);
 		client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &addr_size);
 		printf("[+]Client connected.\n");
 
-	bzero(buffer, 1024);
-	recv(client_sock, buffer, sizeof(buffer), 0);
-	printf("Client: %s\n", buffer);
+		bzero(buffer, 1024);
+		recv(client_sock, buffer, sizeof(buffer), 0);
+		printf("Client: %s\n", buffer);
 
-	bzero(buffer, 1024);
-	strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY AHEAD!!!!");
-	printf("Server: %s\n, buffer);
-	send(client_sock, buffer, strlen(buffer), 0);
+		bzero(buffer, 1024);
+		strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY AHEAD!!!!");
+		printf("Server: %s\n", buffer);
+		send(client_sock, buffer, strlen(buffer), 0);
 
-	close(client_sock);
-	printf("[+]Client disconnected. \n\n");
+		close(client_sock);
+		printf("[+]Client disconnected. \n\n");
 
-	}
+		}
 	return 0;
 }
 
