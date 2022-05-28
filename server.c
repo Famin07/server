@@ -1,75 +1,61 @@
-/*
-	C socket server example
-*/
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>	
 
-#include<stdio.h>
-#include<string.h>	//strlen
-#include<sys/socket.h>
-#include<arpa/inet.h>	//inet_addr
-#include<unistd.h>	//write
+int main() {
 
-int main(int argc , char *argv[])
-{
-	int socket_desc , client_sock , c , read_size;
-	struct sockaddr_in server , client;
-	char client_message[2000];
-	
-	//Create socket
-	socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-	if (socket_desc == -1)
-	{
-		printf("Could not create socket");
+	char *ip = "127.0.0.1";
+	int port = 5566;
+
+	int server_sock, client_sock;
+	struct sockaddr_in server_addr, client_addr;
+	socklen_t addr_size;
+	char buffer[1024];
+	int n;
+
+	server_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if(server_sock < 0) {
+		perror("[-]Socket error");
+		exit(1);
 	}
-	puts("Socket created");
-	
-	//Prepare the sockaddr_in structure
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons( 8888 );
-	
-	//Bind
-	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-	{
-		//print the error message
-		perror("bind failed. Error");
-		return 1;
+	printf("[+]TCP server socket created.\n");
+
+	memset(&server_addr, '\0', sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = port;
+	server_addr.sin_addr = inet_addr("127.0.0.1");
+
+	n = bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+	if(n < 0) { 
+		perror("[-]Bind error");
+		exit(1);
 	}
-	puts("bind done");
-	
-	//Listen
-	listen(socket_desc , 3);
-	
-	//Accept and incoming connection
-	puts("Waiting for incoming connections...");
-	c = sizeof(struct sockaddr_in);
-	
-	//accept connection from an incoming client
-	client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-	if (client_sock < 0)
-	{
-		perror("accept failed");
-		return 1;
-	}
-	puts("Connection accepted");
-	
-	//Receive a message from client
-	while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
-	{
-		//Send the message back to client
-		write(client_sock , client_message , strlen(client_message));
-	}
-	
-	if(read_size == 0)
-	{
-		puts("Client disconnected");
-		fflush(stdout);
-	}
-	else if(read_size == -1)
-	{
-		perror("recv failed");
-	}
-	
+	printf("[+]Bind to the port number: %d\n", port);
+
+	listen(server_sock, 5);
+	printf("Listening...\n");
+
+	while(1){ 
+		addr_size = sizeof(client_addr);
+		client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &addr_size);
+		printf("[+]Client connected.\n");
+
+		bzero(buffer, 1024);
+		recv(client_sock, buffer, sizeof(buffer), 0);
+		printf("Client: %s\n", buffer);
+
+		bzero(buffer, 1024);
+		strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY AHEAD!!!!");
+		printf("Server: %s\n", buffer);
+		send(client_sock, buffer, strlen(buffer), 0);
+
+		close(client_sock);
+		printf("[+]Client disconnected. \n\n");
+
+		}
 	return 0;
-}
 
-
+	}
