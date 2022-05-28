@@ -26,7 +26,7 @@ int main() {
 	addr.sin_port = port;
 	addr.sin_addr.s_addr = inet_addr(ip); //ip refer to local address
 	
-	connect(sock, (struct sockaddr*)&addr, sizeof(adddr));
+	connect(sock, (struct sockaddr*)&addr, sizeof(addr));
 	printf("Connected to the server.\n");
 
 	bzero(buffer, 1024);
